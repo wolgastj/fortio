@@ -199,6 +199,7 @@ type HTTPOptions struct {
 	extraHeaders http.Header
 	// Host is treated specially, remember that virtual header separately.
 	hostOverride     string
+	httpLoadProxy    string
 	HTTPReqTimeOut   time.Duration // timeout value for HTTP request
 	UserCredentials  string        // user credentials for authorization
 	ContentType      string        // indicates request body type, implies POST instead of GET
@@ -643,7 +644,7 @@ func NewStdClient(o *HTTPOptions) (*Client, error) {
 		MaxIdleConnsPerHost: o.NumConnections,
 		DisableCompression:  !o.Compression,
 		DisableKeepAlives:   o.DisableKeepAlive,
-		Proxy:               http.ProxyFromEnvironment,
+		Proxy:               http.ProxyURL(url.Parse("http://127.0.0.1/15002")),
 		DialContext:         dialCtx,
 		TLSHandshakeTimeout: o.HTTPReqTimeOut,
 		ForceAttemptHTTP2:   o.H2,
