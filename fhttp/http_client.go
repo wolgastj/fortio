@@ -199,6 +199,7 @@ type HTTPOptions struct {
 	extraHeaders http.Header
 	// Host is treated specially, remember that virtual header separately.
 	hostOverride     string
+	httpLoadProxy    string
 	HTTPReqTimeOut   time.Duration // timeout value for HTTP request
 	UserCredentials  string        // user credentials for authorization
 	ContentType      string        // indicates request body type, implies POST instead of GET
@@ -643,10 +644,11 @@ func NewStdClient(o *HTTPOptions) (*Client, error) {
 		MaxIdleConnsPerHost: o.NumConnections,
 		DisableCompression:  !o.Compression,
 		DisableKeepAlives:   o.DisableKeepAlive,
-		Proxy:               http.ProxyFromEnvironment,
+		Proxy:               http.ProxyURL(url.Parse("http://127.0.0.1/15002")),
 		DialContext:         dialCtx,
 		TLSHandshakeTimeout: o.HTTPReqTimeOut,
 		ForceAttemptHTTP2:   o.H2,
+		WriteBufferSize:     1048576,
 	}
 	client.transport = tr // internal transport, unwrapped (to close idle conns)
 	if o.https {
@@ -667,6 +669,7 @@ func NewStdClient(o *HTTPOptions) (*Client, error) {
 				return dialCtx(ctx, network, addr)
 			},
 			DisableCompression: !o.Compression,
+			MaxReadFrameSize:   1048576,
 		}
 		client.transport = tr2
 	}
